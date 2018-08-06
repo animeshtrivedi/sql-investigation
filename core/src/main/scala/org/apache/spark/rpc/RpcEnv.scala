@@ -20,8 +20,9 @@ package org.apache.spark.rpc
 import java.io.File
 import java.nio.channels.ReadableByteChannel
 
-import scala.concurrent.Future
+import org.apache.spark.rpc.darpc.DarpcRpcEnvFactory
 
+import scala.concurrent.Future
 import org.apache.spark.{SecurityManager, SparkConf}
 import org.apache.spark.rpc.netty.NettyRpcEnvFactory
 import org.apache.spark.util.RpcUtils
@@ -54,7 +55,10 @@ private[spark] object RpcEnv {
       clientMode: Boolean): RpcEnv = {
     val config = RpcEnvConfig(conf, name, bindAddress, advertiseAddress, port, securityManager,
       numUsableCores, clientMode)
-    new NettyRpcEnvFactory().create(config)
+    if(conf.get("spark.rpc.type").compareToIgnoreCase("darpc") == 0)
+      new DarpcRpcEnvFactory().create(config)
+    else
+      new NettyRpcEnvFactory().create(config)
   }
 }
 
